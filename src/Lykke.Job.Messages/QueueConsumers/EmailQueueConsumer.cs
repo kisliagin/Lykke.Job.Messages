@@ -56,6 +56,14 @@ namespace Lykke.Job.Messages.QueueConsumers
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<EmailComfirmationData>>>(
                     new EmailComfirmationData().MessageId(), itm => HandleConfirmEmailAsync(itm.Data));
 
+                queueReader.RegisterHandler<QueueRequestModel<SendEmailData<PasswordRecoveryEmailComfirmationData>>>(
+                    new PasswordRecoveryEmailComfirmationData().MessageId(),
+                    itm => HandlePasswordRecoveryEmailConfirmationAsync(itm.Data));
+
+                queueReader.RegisterHandler<QueueRequestModel<SendEmailData<FreezePeriodNotificationData>>>(
+                    new FreezePeriodNotificationData().MessageId(),
+                    itm => HandleFreezePeriodEmailNotificationAsync(itm.Data));
+
                 queueReader.RegisterHandler<QueueRequestModel<SendEmailData<CashInData>>>(
                     new CashInData().MessageId(), itm => HandleCashInEmailAsync(itm.Data));
 
@@ -169,6 +177,28 @@ namespace Lykke.Job.Messages.QueueConsumers
             await _log.WriteInfoAsync("EmailRequestQueueConsumer", "HandleConfirmEmailAsync", null, $"DT: {DateTime.UtcNow.ToIsoDateTime()}" +
                                                                                                     $"{Environment.NewLine}{result.ToJson()}");
             var msg = await _emailGenerator.GenerateConfirmEmailMsg(result.MessageData);
+            await _smtpEmailSender.SendEmailAsync(result.EmailAddress, msg);
+        }
+
+        private async Task HandlePasswordRecoveryEmailConfirmationAsync(
+            SendEmailData<PasswordRecoveryEmailComfirmationData> result)
+        {
+            await _log.WriteInfoAsync("EmailRequestQueueConsumer",
+                nameof(HandlePasswordRecoveryEmailConfirmationAsync), null,
+                $"DT: {DateTime.UtcNow.ToIsoDateTime()}{Environment.NewLine}{result.ToJson()}");
+
+            var msg = await _emailGenerator.GeneratePasswordRecoveryConfirmEmailMsg(result.MessageData);
+            await _smtpEmailSender.SendEmailAsync(result.EmailAddress, msg);
+        }
+
+        private async Task HandleFreezePeriodEmailNotificationAsync(
+            SendEmailData<FreezePeriodNotificationData> result)
+        {
+            await _log.WriteInfoAsync("EmailRequestQueueConsumer",
+                nameof(HandleFreezePeriodEmailNotificationAsync), null,
+                $"DT: {DateTime.UtcNow.ToIsoDateTime()}{Environment.NewLine}{result.ToJson()}");
+
+            var msg = await _emailGenerator.GenerateFreezePeriodNotificationEmailMsg(result.MessageData);
             await _smtpEmailSender.SendEmailAsync(result.EmailAddress, msg);
         }
 

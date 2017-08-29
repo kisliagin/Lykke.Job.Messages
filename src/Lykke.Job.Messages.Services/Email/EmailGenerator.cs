@@ -87,6 +87,41 @@ namespace Lykke.Job.Messages.Services.Email
             };
         }
 
+        public async Task<EmailMessage> GeneratePasswordRecoveryConfirmEmailMsg(
+            PasswordRecoveryEmailComfirmationData confirmationData)
+        {
+            var templateVm = new EmailVerificationTemplate()
+            {
+                ConfirmationCode = confirmationData.ConfirmationCode,
+                Year = confirmationData.Year
+            };
+
+            return new EmailMessage()
+            {
+                Body = await _templateGenerator.GenerateAsync(
+                    "PasswordRecoveryEmailConfirmation", templateVm),
+                Subject = EmailResources.EmailConfirmation_Subject,
+                IsHtml = true
+            };
+        }
+
+        public async Task<EmailMessage> GenerateFreezePeriodNotificationEmailMsg(
+            FreezePeriodNotificationData notificationData)
+        {
+            var templateVm = new FreezePeriodNotificationTemplate()
+            {
+                FreezePeriod = notificationData.FreezePeriod,
+                Year = notificationData.Year
+            };
+
+            return new EmailMessage()
+            {
+                Body = await _templateGenerator.GenerateAsync("FreezePeroidEmailNotification", templateVm),
+                Subject = "Password recovery",
+                IsHtml = true
+            };
+        }
+
         public async Task<EmailMessage> GenerateCashInMsg(CashInData cashInData)
         {
             if (cashInData.AssetId == null)
